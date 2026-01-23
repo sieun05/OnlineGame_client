@@ -132,6 +132,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="head.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="socket.h" />
     <ClInclude Include="WindowToNDC.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
