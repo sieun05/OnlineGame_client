@@ -7,3 +7,8 @@
 struct Vec2 {
 	float x, y;
 };
+
+struct RGB 
+{
+	float r, g, b;
+};
