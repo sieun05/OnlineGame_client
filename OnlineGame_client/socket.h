@@ -46,14 +46,14 @@ int InitSocketClient() {
 
     if (WSAStartup(MAKEWORD(2, 2), &wsdata) != 0) {
         cout << "윈도우 소켓 초기화 실패" << endl;
-        return 1;
+        return false;
     }
 
     clientSocket = socket(AF_INET, SOCK_DGRAM, 0);
     if (clientSocket == INVALID_SOCKET) {
         cout << "소켓 생성 실패" << endl;
         WSACleanup();
-        return 1;
+        return false;
     }
 
     serverAddress.sin_family = AF_INET;
