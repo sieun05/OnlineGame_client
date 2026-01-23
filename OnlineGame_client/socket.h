@@ -6,6 +6,8 @@
 #include <atomic>
 #include <thread>
 
+#include "Player.h"
+
 #pragma comment(lib, "ws2_32.lib")
 
 
@@ -24,17 +26,23 @@ DWORD WINAPI RecvThread(LPVOID param) {
     SOCKADDR_IN fromAddr{};
     int fromLen = sizeof(fromAddr);
 
-    char buf[MAX_BUF_SIZE + 20]{};
+    char buf[MAX_BUF_SIZE]{};
 
     while (running.load()) {
         ZeroMemory(buf, sizeof(buf));
 
-        int recvLen = recvfrom(sock, buf, MAX_BUF_SIZE + 20, 0,
+        int recvLen = recvfrom(sock, buf, MAX_BUF_SIZE, 0,
             (SOCKADDR*)&fromAddr, &fromLen);
 
         if (recvLen > 0) {
             buf[recvLen] = '\0';
-            cout << "\n[서버 수신] " << buf << endl;
+            string msg{ buf };
+
+            cout << "[서버수신]" << msg << endl;
+
+            if (msg.rfind("STATE|", 0) == 0) {
+				HandleStateMessage(msg);
+            }
         }
     }
 
