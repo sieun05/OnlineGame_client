@@ -6,9 +6,8 @@
 GLvoid drawScene(GLvoid);
 GLvoid Reshape(int w, int h);
 GLvoid Keyboard(unsigned char key, int x, int y);
-
-//Init
-Player player{ Vec2{0.0f, 0.0f}, 0.5f, 0.5f, RGB{1.0f, 0.0f, 0.0f} };
+void Timer(int value);
+void OnClose();
 
 int main(int argc, char** argv) 
 {
@@ -36,9 +35,10 @@ int main(int argc, char** argv)
 	glutDisplayFunc(drawScene);
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(Keyboard);
+	glutTimerFunc(16, Timer, 0);
+	glutCloseFunc(OnClose);
 	glutMainLoop();
 
-	CleanupSocket();
 	return 0;
 }
 
@@ -48,11 +48,31 @@ GLvoid drawScene(GLvoid)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glColor3f(player.color.r, player.color.g, player.color.b);
-	glRectf(player.pos.x - player.width / 2.0f,
-		player.pos.y - player.height / 2.0f,
-		player.pos.x + player.width / 2.0f,
-		player.pos.y + player.height / 2.0f);
-	
+	glRectf(
+		player.pos.x -		/*player.width  /*/ 0.2f,
+		player.pos.y -		/*player.height /*/ 0.2f,
+		player.pos.x +		/*player.width  /*/ 0.2f,
+		player.pos.y +		/*player.height /*/ 0.2f);
+
+	vector<Player> snapshot;
+
+	{
+		std::lock_guard<std::mutex> lock(playersMutex);
+		for (const auto& pair : otherPlayers) {
+			snapshot.push_back(pair.second);
+		}
+	}
+
+	for (auto& p : snapshot) {
+		glColor3f(p.color.r+1.0f, p.color.g, p.color.b);
+		glRectf(
+			p.pos.x - /*player.width  /*/ 0.2f,
+			p.pos.y - /*player.height /*/ 0.2f,
+			p.pos.x + /*player.width  /*/ 0.2f,
+			p.pos.y + /*player.height /*/ 0.2f
+		);
+	}
+
 	glutSwapBuffers();
 }
 
@@ -78,6 +98,9 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 	case 'd':
 		msg = "MOVE|RIGHT";
 		break;
+	case 27: // ESC key
+		exit(0);
+		return;
 	default:
 		msg = "MOVESTOP";
 		break;
@@ -87,4 +110,17 @@ GLvoid Keyboard(unsigned char key, int x, int y)
 		(SOCKADDR*)&serverAddress, sizeof(serverAddress));
 
 	glutPostRedisplay();
+}
+
+void Timer(int value)
+{
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 0);
+}
+
+void OnClose()
+{
+	sendto(clientSocket, "QUIT", sizeof("QUIT"), 0,
+		(SOCKADDR*)&serverAddress, sizeof(serverAddress));
+	CleanupSocket();
 }
