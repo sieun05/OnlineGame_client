@@ -40,6 +40,11 @@ DWORD WINAPI RecvThread(LPVOID param) {
 
             cout << "[서버수신]" << msg << endl;
 
+            if (msg.rfind("WELCOME|", 0) == 0) {
+				cout << "내 PlayerID 설정: " << msg.substr(8) << endl;
+				Set_MyPlayerID(atoi(msg.substr(8).c_str()));
+            }
+
             if (msg.rfind("STATE|", 0) == 0) {
 				HandleStateMessage(msg);
             }
